@@ -7,6 +7,17 @@ double *allocateMatrix(int rows, int cols) {
     return (double *)malloc(rows * cols * sizeof(double));
 }
 
+double *dump(double *mar,int rows,int cols){
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            printf("%0.lf ",mar[i*cols+j]);
+        }
+        printf("\n");
+    }
+}
+
 double *transpose(double *mar,int rows,int cols){
     double *temp=allocateMatrix(rows,cols);
     for (int i = 0; i < rows; i++)
@@ -17,14 +28,42 @@ double *transpose(double *mar,int rows,int cols){
         }
         
     }
-    for (int i = 0; i < cols; i++)
+    int temp2=cols;
+    cols =rows;
+    rows=temp2;
+    dump(temp,rows,cols);
+}
+
+double *add(double *marA,double *marB,int rowsA,int colsA,int rowsB,int colsB){
+    if (rowsA==rowsB && colsA==colsB)
     {
-        for (int j = 0; j < rows; j++)
+        double *temp=allocateMatrix(rowsA,colsB);
+        for (int i = 0; i < rowsA ; i++)
         {
-            printf("%0.lf ",temp[i*rows+j]);
+            for (int j = 0; j < colsA; j++)
+            {
+                temp[i*colsA+j]=marA[i*colsA+j]+marB[i*colsA+j];
+            }
         }
-        printf("\n");
+        dump(temp,rowsA,colsA);
     }
+    else printf("err\n");
+    
+}
+
+double *multiply(double *marA,double *marB,int rowsA,int colsA,int rowsB,int colsB){
+    if (rowsA==rowsB && colsA==colsB){
+        double *temp=allocateMatrix(rowsA,colsB);
+        for (int i = 0; i < rowsA ; i++)
+        {
+            for (int j = 0; j < colsA; j++)
+            {
+                temp[i*colsA+j]=marA[i*colsA+j]*marB[i*colsA+j];
+            }
+        }
+        dump(temp,rowsA,colsA);
+    }
+    else printf("err\n");
 }
 
 int main(){
@@ -53,8 +92,12 @@ int main(){
             marB[i*colsB+j]=in1[j];
         }
     }
-    printf("MatrixA to transpose:\n");
+    printf("Transposed MatrixA:\n");
     transpose(marA,rowsA,colsA);
-    printf("MatrixB to transpose:\n");
+    printf("Transposed MatrixB:\n");
     transpose(marB,rowsB,colsB);
+    printf("The added matrix:\n");
+    add(marA,marB,rowsA,colsA,rowsB,colsB);
+    printf("The multiplied matrix:\n");
+    multiply(marA,marB,rowsA,colsA,rowsB,colsB);
 }
