@@ -7,6 +7,7 @@ double *allocateMatrix(int rows, int cols) {
     return (double *)malloc(rows * cols * sizeof(double));
 }
 
+//其餘自己完成
 double *dump(double *mar,int rows,int cols){
     for (int i = 0; i < rows; i++)
     {
