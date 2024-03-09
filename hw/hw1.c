@@ -2,9 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-//動態分配記憶體大小
+//動態分配記憶體大小，參考chatgpt
 double *allocateMatrix(int rows, int cols) {
     return (double *)malloc(rows * cols * sizeof(double));
+}
+
+double *transpose(double *mar,int rows,int cols){
+    double *temp=allocateMatrix(rows,cols);
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            temp[j*rows+i]=mar[i*cols+j];
+        }
+        
+    }
+    for (int i = 0; i < cols; i++)
+    {
+        for (int j = 0; j < rows; j++)
+        {
+            printf("%0.lf ",temp[i*rows+j]);
+        }
+        printf("\n");
+    }
 }
 
 int main(){
@@ -14,27 +34,27 @@ int main(){
     double *marA=allocateMatrix(rowsA,colsA);
     double *marB=allocateMatrix(rowsB,colsB);
     printf("MatrixA:\n");
-    int count=0;
     for (int  i = 0; i < rowsA; i++)
     {
-        double in1=0,in2=0,in3=0;
-        scanf("%lf %lf %lf",&in1,&in2,&in3);
+        double in1[colsA];
         for (int j = 0; j < colsA; j++)
         {
-            switch (j)
-            {
-                case 0:
-                    marA[count]=in1;
-                    break;
-                case 1:
-                    marA[count]=in2;
-                    break;
-                case 2:
-                    marA[count]=in3;
-                    break;
-            }
-            printf("%f\n",marA[count]);
-            count++;
+            scanf("%lf",&in1[j]);
+            marA[i*colsA+j]=in1[j];
         }
     }
+    printf("MatrixB:\n");
+    for (int  i = 0; i < rowsB; i++)
+    {
+        double in1[colsB];
+        for (int j = 0; j < colsB; j++)
+        {
+            scanf("%lf",&in1[j]);
+            marB[i*colsB+j]=in1[j];
+        }
+    }
+    printf("MatrixA to transpose:\n");
+    transpose(marA,rowsA,colsA);
+    printf("MatrixB to transpose:\n");
+    transpose(marB,rowsB,colsB);
 }
