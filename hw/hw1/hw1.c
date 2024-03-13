@@ -53,16 +53,21 @@ double *add(double *marA,double *marB,int rowsA,int colsA,int rowsB,int colsB){
 }
 
 double *multiply(double *marA,double *marB,int rowsA,int colsA,int rowsB,int colsB){
-    if (rowsA==rowsB && colsA==colsB){
+    if (colsA==rowsB){
         double *temp=allocateMatrix(rowsA,colsB);
         for (int i = 0; i < rowsA ; i++)
         {
-            for (int j = 0; j < colsA; j++)
+            for (int k = 0; k < colsB; k++)
             {
-                temp[i*colsA+j]=marA[i*colsA+j]*marB[i*colsA+j];
+                int counter=0;
+                for (int j = 0; j < colsA; j++)
+                {
+                    counter+=marA[i*colsA+j]*marB[j*colsB+k];
+                }
+                temp[i*colsB+k]=counter;
             }
         }
-        dump(temp,rowsA,colsA);
+        dump(temp,rowsA,colsB);
     }
     else printf("err\n");
 }
