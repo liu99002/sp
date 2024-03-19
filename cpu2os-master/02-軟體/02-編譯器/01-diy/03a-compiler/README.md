@@ -59,11 +59,11 @@ token=;
 t0 = i
 t1 = 10
 t2 = t0 < t1
-goto L1 if T2
 t3 = i
 t4 = 1
 t5 = t3 + t4
 i = t5
+goto L1 if T2
 goto L0
 (L1)
 ``` 

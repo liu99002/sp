@@ -6,6 +6,7 @@ void STMT();
 void IF();
 void BLOCK();
 
+
 int tempIdx = 0, labelIdx = 0;
 
 #define nextTemp() (tempIdx++)
@@ -99,6 +100,23 @@ void WHILE() {
   emit("(L%d)\n", whileEnd);
 }
 
+//DOWHILE=do STMT while (E)
+void DOWHILE(){
+  int whileBegin = nextLabel();
+  int whileEnd = nextLabel();
+  emit("(L%d)\n", whileBegin);
+  skip("do");
+  STMT();
+  skip("while");
+  skip("(");
+  int e = E();
+  emit("if not T%d goto L%d\n", e, whileEnd);
+  skip(")");
+  skip(";");
+  emit("goto L%d\n", whileBegin);
+  emit("(L%d)\n", whileEnd);
+}
+
 // if (EXP) STMT (else STMT)?
 void IF() {
   skip("if");
@@ -116,6 +134,8 @@ void IF() {
 void STMT() {
   if (isNext("while"))
     return WHILE();
+  else if(isNext("do"))
+    DOWHILE();
   else if (isNext("if"))
     IF();
   else if (isNext("{"))
