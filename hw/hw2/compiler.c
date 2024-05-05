@@ -1,17 +1,15 @@
 #include <assert.h>
 #include "compiler.h"
 
-int E();
+int  E();
 void STMT();
 void IF();
 void BLOCK();
 
-
-int tempIdx = 0, labelIdx = 0;
+int tempIdx = 1, labelIdx = 1;
 
 #define nextTemp() (tempIdx++)
 #define nextLabel() (labelIdx++)
-#define emit printf
 
 int isNext(char *set) {
   char eset[SMAX], etoken[SMAX];
@@ -20,12 +18,15 @@ int isNext(char *set) {
   return (tokenIdx < tokenTop && strstr(eset, etoken) != NULL);
 }
 
+int isNextType(TokenType type) {
+  return (types[tokenIdx] == type);
+}
+
 int isEnd() {
   return tokenIdx >= tokenTop;
 }
 
 char *next() {
-  // printf("token[%d]=%s\n", tokenIdx, tokens[tokenIdx]);
   return tokens[tokenIdx++];
 }
 
@@ -33,30 +34,46 @@ char *skip(char *set) {
   if (isNext(set)) {
     return next();
   } else {
-    printf("skip(%s) got %s fail!\n", set, next());
-    assert(0);
+    error("skip(%s) got %s fail!\n", set, next());
   }
 }
 
-// F = (E) | Number | Id
+char *skipType(TokenType type) {
+  if (isNextType(type)) {
+    return next();
+  } else {
+    error("skipType(%s) got %s fail!\n", typeName[type], typeName[types[tokenIdx]]);
+  }
+}
+
+// CALL(id) = (E*)
+int CALL(char *id) {
+  assert(isNext("("));
+  skip("(");
+  int e[100], ei = 0;
+  while (!isNext(")")) {
+    e[ei++] = E();
+    if (!isNext(")")) skip(",");
+  }
+  for (int i=0; i<ei; i++) {
+    irEmitArg(e[i]);
+  }
+  skip(")");
+  irEmitCall(id, ei);
+  return 0;
+}
+
+// F = (E) | Number | Id | CALL
 int F() {
   int f;
   if (isNext("(")) { // '(' E ')'
     next(); // (
     f = E();
     next(); // )
-  } else { // Number | Id
+  } else { // Number | Id | CALL
     f = nextTemp();
     char *item = next();
-    if (isdigit(*item)) {
-      emit("t%d = %s\n", f, item);
-    } else {
-      if (isNext("++")) {
-        next();
-        emit("%s = %s + 1\n", item, item);
-      }
-      emit("t%d = %s\n", f, item);
-    }
+    irEmitAssignTs(f, item); // t[i] = item
   }
   return f;
 }
@@ -64,107 +81,95 @@ int F() {
 // E = F (op E)*
 int E() {
   int i1 = F();
-  while (isNext("+ - * / & | ! < > = <= >= == !=")) {
+  while (isNext("+ - * / & | < > = <= >= == != && ||")) {
     char *op = next();
     int i2 = E();
     int i = nextTemp();
-    emit("t%d = t%d %s t%d\n", i, i1, op, i2);
+    irEmitOp2(i, i1, op, i2); // t[i] = t[i1] op t[i2]
     i1 = i;
   }
   return i1;
 }
 
-// FOR =  for (ASSIGN EXP; EXP) STMT
-
-// ASSIGN = id '=' E;
-void ASSIGN() {
-  char *id = next();
-  skip("=");
-  int e = E();
-  skip(";");
-  emit("%s = t%d\n", id, e);
+int EXP() {
+  tempIdx = 1; // 讓 temp 重新開始，才不會 temp 太多！
+  return E();
 }
 
-// WHILE = while (E) STMT
+// ASSIGN = id '=' E
+void ASSIGN(char *id) {
+  skip("=");
+  int e = EXP();
+  irEmitAssignSt(id, e); // t[i] = e
+}
+
+// while (E) STMT
 void WHILE() {
   int whileBegin = nextLabel();
   int whileEnd = nextLabel();
-  emit("(L%d)\n", whileBegin);
+  irEmitLabel(whileBegin); // label (L%d)
   skip("while");
   skip("(");
   int e = E();
-  emit("if not T%d goto L%d\n", e, whileEnd);
+  irEmitIfNotGoto(e, whileEnd); // goif T[e] L[whileEnd]
   skip(")");
   STMT();
-  emit("goto L%d\n", whileBegin);
-  emit("(L%d)\n", whileEnd);
+  irEmitGoto(whileBegin); // goto L[whileBegin]
+  irEmitLabel(whileEnd);  // goto L[whileEnd]
 }
 
 //DOWHILE=do STMT while (E)
 void DOWHILE(){
   int whileBegin = nextLabel();
   int whileEnd = nextLabel();
-  emit("(L%d)\n", whileBegin);
+  irEmitLabel(whileBegin); // label (L%d)
   skip("do");
   STMT();
   skip("while");
   skip("(");
   int e = E();
-  emit("if not T%d goto L%d\n", e, whileEnd);
+  irEmitIfGoto(e, whileBegin); // goif T[e] L[whileEnd]
   skip(")");
   skip(";");
-  emit("goto L%d\n", whileBegin);
-  emit("(L%d)\n", whileEnd);
 }
 
-// if (EXP) STMT (else STMT)?
-void IF() {
-  skip("if");
-  skip("(");
-  E();
-  skip(")");
-  STMT();
-  if (isNext("else")) {
-    skip("else");
-    STMT();
+void STMT() {
+  if (isNext("while"))
+    WHILE();
+  // else if (isNext("if")) IF(); // 預留作為習題
+  else if (isNext("{"))
+    BLOCK();
+  else if (isNext("do"))
+    DOWHILE();
+  else {
+    char *id = next();
+    if (isNext("(")) {
+      CALL(id);
+    } else {
+      ASSIGN(id);
+    }
+    skip(";");
   }
 }
 
-// STMT = WHILE | BLOCK | ASSIGN
-void STMT() {
-  if (isNext("while"))
-    return WHILE();
-  else if(isNext("do"))
-    DOWHILE();
-  else if (isNext("if"))
-    IF();
-  else if (isNext("{"))
-    BLOCK();
-  else
-    ASSIGN();
-}
-
-// STMTS = STMT*
 void STMTS() {
   while (!isEnd() && !isNext("}")) {
     STMT();
   }
 }
 
-// BLOCK = { STMTS }
+// { STMT* }
 void BLOCK() {
   skip("{");
   STMTS();
   skip("}");
 }
 
-// PROG = STMTS
 void PROG() {
   STMTS();
 }
 
 void parse() {
-  printf("============ parse =============\n");
   tokenIdx = 0;
   PROG();
 }

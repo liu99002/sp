@@ -1,18 +1,16 @@
-#include "compiler.h"
+#include "lexer.h"
 
-#define TMAX 10000000
-#define LMAX 100
-
-char *typeName[6] = {"Id", "Int", "Keyword", "Literal", "Char", "Op"};
+char *typeName[5] = {"Id", "Int", "Keyword", "Literal", "Op"};
 char code[TMAX], *p;
 char strTable[TMAX], *strTableEnd=strTable;
-char *tokens[TMAX], tokenTop=0, tokenIdx=0, token[LMAX];
+char *tokens[TMAX], tokenTop=0, tokenIdx=0, token[SMAX];
+TokenType types[TMAX], type;
 
 char *scan() {
   while (isspace(*p)) p++;
 
   char *start = p;
-  int type;
+  // TokenType type;
   if (*p == '\0') return NULL;
   if (*p == '"') {
     p++;
@@ -22,18 +20,19 @@ char *scan() {
   } else if (*p >='0' && *p <='9') { // 數字
     while (*p >='0' && *p <='9') p++;
     type = Int;
-  } else if (isAlpha(*p) || *p == '_') { // 變數名稱或關鍵字
-    while (isAlpha(*p) || isDigit(*p) || *p == '_') p++;
+  } else if (isalpha(*p) || *p == '_') { // 變數名稱或關鍵字
+    while (isalpha(*p) || isdigit(*p) || *p == '_') p++;
     type = Id;
   } else if (strchr("+-*/%%&|<>!=", *p) >= 0) {
     char c = *p++;
     if (*p == '=') p++; // +=, ==, <=, !=, ....
     else if (strchr("+-&|", c) >= 0 && *p == c) p++; // ++, --, &&, ||
     type = Op;
-  } else { // 單一字元
+  } else {
     p++;
-    type = Char;
+    type = Op;
   }
+
   int len = p-start;
   strncpy(token, start, len);
   token[len] = '\0';
@@ -41,15 +40,23 @@ char *scan() {
 }
 
 void lex(char *code) {
-  printf("========== lex ==============\n");
+  // printf("========== lex ==============\n");
   p = code;
   tokenTop = 0;
   while (1) {
     char *tok = scan();
     if (tok == NULL) break;
     strcpy(strTableEnd, tok);
+    types[tokenTop] = type;
     tokens[tokenTop++] = strTableEnd;
     strTableEnd += (strlen(tok)+1);
-    printf("token=%s\n", tok);
+    // printf("token=%s\n", tok);
+  }
+}
+
+void lexDump() {
+  printf("========== lexDump ==============\n");
+  for (int i=0; i<tokenTop; i++) {
+    printf("%02d:%-20s %-20s\n", i, tokens[i], typeName[types[i]]);
   }
 }

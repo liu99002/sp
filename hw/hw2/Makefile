@@ -4,7 +4,7 @@ TARGET = compiler
 
 all: $(TARGET)
 
-$(TARGET): lexer.c compiler.c main.c
+$(TARGET): ir.c irvm.c map.c util.c lexer.c compiler.c main.c
 	$(CC) $(CFLAGS) $^ -o $@
 
 clean:

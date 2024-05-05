@@ -118,12 +118,29 @@ void WHILE() {
   irEmitLabel(whileEnd);  // goto L[whileEnd]
 }
 
+//DOWHILE=do STMT while (E)
+void DOWHILE(){
+  int whileBegin = nextLabel();
+  int whileEnd = nextLabel();
+  irEmitLabel(whileBegin); // label (L%d)
+  skip("do");
+  STMT();
+  skip("while");
+  skip("(");
+  int e = E();
+  irEmitIfGoto(e, whileBegin); // goif T[e] L[whileEnd]
+  skip(")");
+  skip(";");
+}
+
 void STMT() {
   if (isNext("while"))
     WHILE();
   // else if (isNext("if")) IF(); // 預留作為習題
   else if (isNext("{"))
     BLOCK();
+  else if (isNext("do"))
+    DOWHILE();
   else {
     char *id = next();
     if (isNext("(")) {

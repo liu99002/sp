@@ -45,6 +45,11 @@ void S() {
 
 int main() {
   timeSeed();
-  S();
+  for (int i = 0; i < 10; i++)
+  {
+    S();
+  }
+  
+  
 }
 
