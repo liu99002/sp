@@ -121,7 +121,6 @@ void WHILE() {
 //DOWHILE=do STMT while (E)
 void DOWHILE(){
   int whileBegin = nextLabel();
-  int whileEnd = nextLabel();
   irEmitLabel(whileBegin); // label (L%d)
   skip("do");
   STMT();
