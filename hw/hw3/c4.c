@@ -84,7 +84,7 @@ int run(int *pc, int *bp, int *sp) { // 虛擬機 => pc: 程式計數器, sp: �
 
 int main() // 主程式
 {
-  int *pc, *bp, *sp, poolsz, *t, *power, *loc ,*rememberwhile ;
+  int *pc, *bp, *sp, poolsz, *t, *power, *loc ,*whileBegin;
 
   poolsz = 256*1024; // arbitrary size
   if (!(e = malloc(poolsz))) { printf("could not malloc(%d) text area\n", poolsz); return -1; } // 程式段
@@ -103,7 +103,7 @@ int main() // 主程式
   *e++ = IMM; *e++ = 1;
   *e++ = SI;
 //5:     while (n>0)
-  rememberwhile = e; *loc = (int) e; 
+  whileBegin = e; 
   *e++ = LLA; *e++ = 2;
   *e++ = LI;
   *e++ = PSH;
@@ -132,14 +132,12 @@ int main() // 主程式
   *e++ = SI;
 //9:     }
 //10:     return a;
-  *e++ = JMP; *e++ = rememberwhile;
-  *e++ = LLA; *e++ = -1;
+  *e++ = JMP; *e++ = whileBegin;
+  *loc = (int) e; *e++ = LLA; *e++ = -1;
   *e++ = LI;
   *e++ = LEV;
 //11: }
   *e++ = LEV;
-
-
 //12:
 //13: int main(){
 //14:     printf("%d",power(2,10));
