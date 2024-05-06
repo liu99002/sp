@@ -1,69 +1,150 @@
-# Compiler
-
-## 語法
-
-```
-PROG = STMTS
-BLOCK = { STMTS }
-STMTS = STMT*
-STMT = WHILE | BLOCK | ASSIGN
-WHILE = while (E) STMT
-ASSIGN = id '=' E;
-E = F (op E)*
-F = (E) | Number | Id
-```
+//DOWHILE=do STMT while (E)
+void DOWHILE(){
+  int whileBegin = nextLabel(); //宣告開始標籤
+  irEmitLabel(whileBegin); // label (L%d)//開始標籤位置
+  skip("do");
+  STMT(); //處理迴圈內程式
+  skip("while");
+  skip("(");
+  int e = E(); //處理條件式,並將結果存儲在e
+  irEmitIfGoto(e, whileBegin); //如果e符合條件,就回到開始標籤的位置,否則繼續程式
+  skip(")");
+  skip(";");
+}
 
 ## 執行結果
-
-```
-user@DESKTOP-96FRN6B MINGW64 /d/ccc/book/sp/code/c/02-compiler/03-compiler
-$ make clean
-rm -f *.o *.exe
-
-user@DESKTOP-96FRN6B MINGW64 /d/ccc/book/sp/code/c/02-compiler/03-compiler
-$ make
-gcc -std=c99 -O0 lexer.c compiler.c main.c -o compiler
-
-user@DESKTOP-96FRN6B MINGW64 /d/ccc/book/sp/code/c/02-compiler/03-compiler
-$ ./compiler test/while.c
-while (i<10) i = i + 1;
-
-========== lex ==============
-token=while
-token=(
-token=i
-token=<
-token=10
-token=)
-token=i
-token==
-token=i
-token=+
-token=1
-token=;
-========== dump ==============
-0:while
-1:(
-2:i
-3:<
-4:10
-5:)
-6:i
-7:=
-8:i
-9:+
-10:1
-11:;
-============ parse =============
-(L0)
-t0 = i
-t1 = 10
-t2 = t0 < t1
-goto L1 if T2
-t3 = i
-t4 = 1
-t5 = t3 + t4
-i = t5
-goto L0
-(L1)
-``` 
+===================irRun()=======================
+00: t1 = 1 (1)
+01: i = t1 (1)
+02: t1 = 0 (0)
+03: s = t1 (0)
+04: (L1) (4)
+05: t1 = s (0)
+06: t2 = i (1)
+07: t3 = t1 + t2 (1)
+08: s = t3 (1)
+09: t1 = i (1)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (2)
+12: i = t3 (2)
+13: t4 = i (2)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (1)
+06: t2 = i (2)
+07: t3 = t1 + t2 (3)
+08: s = t3 (3)
+09: t1 = i (2)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (3)
+12: i = t3 (3)
+13: t4 = i (3)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (3)
+06: t2 = i (3)
+07: t3 = t1 + t2 (6)
+08: s = t3 (6)
+09: t1 = i (3)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (4)
+12: i = t3 (4)
+13: t4 = i (4)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (6)
+06: t2 = i (4)
+07: t3 = t1 + t2 (10)
+08: s = t3 (10)
+09: t1 = i (4)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (5)
+12: i = t3 (5)
+13: t4 = i (5)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (10)
+06: t2 = i (5)
+07: t3 = t1 + t2 (15)
+08: s = t3 (15)
+09: t1 = i (5)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (6)
+12: i = t3 (6)
+13: t4 = i (6)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (15)
+06: t2 = i (6)
+07: t3 = t1 + t2 (21)
+08: s = t3 (21)
+09: t1 = i (6)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (7)
+12: i = t3 (7)
+13: t4 = i (7)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (21)
+06: t2 = i (7)
+07: t3 = t1 + t2 (28)
+08: s = t3 (28)
+09: t1 = i (7)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (8)
+12: i = t3 (8)
+13: t4 = i (8)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (28)
+06: t2 = i (8)
+07: t3 = t1 + t2 (36)
+08: s = t3 (36)
+09: t1 = i (8)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (9)
+12: i = t3 (9)
+13: t4 = i (9)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (36)
+06: t2 = i (9)
+07: t3 = t1 + t2 (45)
+08: s = t3 (45)
+09: t1 = i (9)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (10)
+12: i = t3 (10)
+13: t4 = i (10)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (1)
+16: if t6 (1) goto L1 (4)
+04: (L1) (4)
+05: t1 = s (45)
+06: t2 = i (10)
+07: t3 = t1 + t2 (55)
+08: s = t3 (55)
+09: t1 = i (10)
+10: t2 = 1 (1)
+11: t3 = t1 + t2 (11)
+12: i = t3 (11)
+13: t4 = i (11)
+14: t5 = 11 (11)
+15: t6 = t4 < t5 (0)
+16: if t6 (0)  -- fail
