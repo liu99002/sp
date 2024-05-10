@@ -4,10 +4,10 @@ TARGET = server client
 
 all: $(TARGET)
 
-server: server.c
+server: servergpt.c
 	$(CC) $(CFLAGS) $^ -o $@
 
-client: client.c
+client: clientgpt.c
 	$(CC) $(CFLAGS) $^ -o $@
 
 clean:

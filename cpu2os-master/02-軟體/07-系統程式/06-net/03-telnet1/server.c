@@ -6,7 +6,8 @@ int serv(int connfd) {
   dup2(connfd, STDERR_FILENO);             // 用 connfd 取代 stderr
   while (1) {
     char cmd[SMAX];
-    int len = read(connfd, cmd, SMAX);     // 讀入 client 傳來的命令
+    //read(int fd 是要讀取的文件描述符,void *buf 是用於存放讀取數據的緩衝區,size_t count 是要讀取的最大字節數)
+    int len = read(connfd, cmd, SMAX);     // 讀入 client 傳來的命令 
     if (len <= 0) break;                   // 若沒讀到就結束了！
     strtok(cmd, "\n");                     // 把 \n 去除
     fprintf(stderr, "cmd=%s\n", cmd);      // 印出命令方便觀察
@@ -19,16 +20,23 @@ int serv(int connfd) {
 }
 
 int main(int argc, char *argv[]) {
-  int port = (argc >= 2) ? atoi(argv[1]) : PORT;
-  net_t net;
-  net_init(&net, TCP, SERVER, port, NULL);
-  net_bind(&net);
-  net_listen(&net);
-  while(1) { // 主迴圈：等待 client 連進來，然後啟動 serv 為其服務
-    int connfd = net_accept(&net); // 等待連線進來
-    assert(connfd >= 0);
-    if (fork() <= 0) { // 創建新的行程去服務該連線。
-      serv(connfd);    // 子行程開始執行 serv()
+    // 解析命令行參數以獲取要使用的端口號，如果未提供則使用預設端口號
+    int port = (argc >= 2) ? atoi(argv[1]) : PORT;
+    // 初始化一個 TCP 網路結構體 net
+    net_t net;
+    net_init(&net, TCP, SERVER, port, NULL);
+    // 使用 net_bind 函式將網路結構體綁定到指定端口
+    net_bind(&net);
+    // 使用 net_listen 函式開始監聽來自客戶端的連接
+    net_listen(&net);
+    // 進入無限循環，等待客戶端的連接
+    while(1) {
+        // 使用 net_accept 函式接受客戶端的連接，返回一個新的連接描述符
+        int connfd = net_accept(&net);
+        assert(connfd >= 0);
+        // 如果 fork() 返回值小於等於 0，表示出錯或是在子進程中，則在子進程中執行 serv 函式，為客戶端提供服務
+        if (fork() <= 0) {
+            serv(connfd); // 子行程開始執行 serv()
+        }
     }
-  }
 }
