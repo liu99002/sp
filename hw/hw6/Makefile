@@ -3,10 +3,10 @@ CFLAGS = -std=gnu99 # -Wall
 TARGET = server client
 all: $(TARGET)
 
-server: servergpt.c net.c
+server: server.c net.c
 	$(CC) $(CFLAGS) $^ -o $@
 
-client: clientgpt.c net.c
+client: client.c net.c
 	$(CC) $(CFLAGS) $^ -o $@
 
 clean:
