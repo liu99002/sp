@@ -1,0 +1,6 @@
+Warning: xxx
+Error: yyy
+Warning: xxx
+Error: yyy
+Warning: xxx
+Error: yyy
