@@ -1,0 +1,10 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "compiler.h": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "algorithm": "c",
+        "net.h": "c"
+    }
+}
