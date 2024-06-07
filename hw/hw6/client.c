@@ -1,22 +1,30 @@
 #include "net.h"
 
 int main(int argc, char *argv[]) {
-  int port = (argc >= 2) ? atoi(argv[1]) : PORT;
-  char *host = (argc >= 3) ? argv[2] : "localhost";
-  net_t net;
-  net_init(&net, TCP, CLIENT, port, host);
-  net_connect(&net);
-  char cmd[SMAX], recvBuff[TMAX], op[SMAX], line[SMAX], path[SMAX];
-  printf("connect to server %s success!\n", net.serv_ip);
-  while (1) { 
-    sleep(1);                                // 休息一秒鐘
-    int n = read(net.sock_fd, recvBuff, TMAX-1);  // 讀取 server 傳回來的訊息
-    assert(n > 0);
-    recvBuff[n-1] = '\0';                    // 字串結尾，把最後一個 \n 去掉!
-    printf("======================Result======================\n");
-    puts(recvBuff);                         // 顯示回應訊息
-    printf("\n");
-  }
-  close(net.sock_fd);
-  return 0;
+	char *ip = argv[1];
+	int port = atoi(argv[2]);
+	int sfd = socket(AF_INET, SOCK_STREAM, 0);
+	struct sockaddr_in saddr, raddr;
+	memset(&saddr, 0, sizeof(saddr));
+	memset(&raddr, 0, sizeof(raddr));
+	saddr.sin_family = AF_INET;
+	saddr.sin_port = htons(port);
+	saddr.sin_addr.s_addr = inet_addr(ip);
+	int rc = connect(sfd, (struct sockaddr*) &saddr, sizeof(struct sockaddr));
+	assert(rc >= 0);
+	printf("connect to server success!\n");
+	
+	while (1)
+	{
+		char msg[SMAX];
+		int n = recv(sfd, msg, SMAX - 1, 0);
+		if (n <=0) break;
+		if (n!=1)
+		{
+			printf("Execution result:\n");
+    		printf("%s\n\n", msg);
+		}
+	}
+	close(sfd);
+	return 0;
 }

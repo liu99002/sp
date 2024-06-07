@@ -15,10 +15,11 @@
 #include <assert.h>
 #include <sys/wait.h>
 #include <sys/errno.h>
-#include <pthread.h>    
+#include <pthread.h>  
 
 #define PORT 8080
 #define SMAX 256
+#define CMAX 10
 #define TMAX 65536
 #define ENDTAG "<__end__>"
 
